@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SKILLS_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
+SKILLS_DIR="/home/pedro/.openclaw/workspace/skills"
 CMD="${1:-help}"
 
 cd "$SKILLS_DIR"
@@ -32,8 +32,8 @@ case "$CMD" in
     ;;
   list)
     echo "Installed skills:"
-    for skill in */; do
-      skill=${skill%/}
+    for skill in "$SKILLS_DIR"/*/; do
+      skill=$(basename "$skill")
       [[ "$skill" == "bin" ]] && continue
       desc=$(grep -m1 '^description:' "$SKILLS_DIR/$skill/SKILL.md" 2>/dev/null | sed 's/description: //' || echo '—')
       printf "  %-20s %s\n" "$skill" "$desc"
