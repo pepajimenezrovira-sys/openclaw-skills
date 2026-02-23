@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+SKILLS_DIR="/home/pedro/.openclaw/workspace/skills"
+CMD="${1:-help}"
+
+cd "$SKILLS_DIR"
+
+case "$CMD" in
+  push)
+    echo "→ Syncing skills to GitHub..."
+    git add -A
+    if git diff --cached --quiet; then
+      echo "  Nothing to commit, already up to date."
+    else
+      MSG="${2:-update skills $(date '+%Y-%m-%d %H:%M')}"
+      git commit -m "$MSG"
+      git push
+      echo "  Done: $(git log -1 --oneline)"
+    fi
+    ;;
+  pull)
+    echo "→ Pulling latest skills from GitHub..."
+    git pull
+    echo "  Done."
+    ;;
+  status)
+    git status --short
+    ;;
+  log)
+    git log --oneline -10
+    ;;
+  list)
+    echo "Installed skills:"
+    for skill in "$SKILLS_DIR"/*/; do
+      skill=$(basename "$skill")
+      [[ "$skill" == "bin" ]] && continue
+      desc=$(grep -m1 '^description:' "$SKILLS_DIR/$skill/SKILL.md" 2>/dev/null | sed 's/description: //' || echo '—')
+      printf "  %-20s %s\n" "$skill" "$desc"
+    done
+    ;;
+  help|*)
+    echo "skills-sync — manage your OpenClaw skills repo"
+    echo ""
+    echo "Usage: skills-sync <command>"
+    echo ""
+    echo "Commands:"
+    echo "  push [msg]   Commit and push all changes to GitHub"
+    echo "  pull         Pull latest from GitHub"
+    echo "  status       Show git status"
+    echo "  log          Show last 10 commits"
+    echo "  list         List installed skills"
+    ;;
+esac
